@@ -7,11 +7,12 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/portworx/torpedo/drivers/node"
+	_ "github.com/portworx/torpedo/drivers/node/aws"
+	_ "github.com/portworx/torpedo/drivers/node/ssh"
 	"github.com/portworx/torpedo/drivers/scheduler"
 	_ "github.com/portworx/torpedo/drivers/scheduler/k8s"
 	"github.com/portworx/torpedo/drivers/volume"
 	_ "github.com/portworx/torpedo/drivers/volume/portworx"
-	_ "github.com/portworx/torpedo/drivers/node/ssh"
 	"github.com/portworx/torpedo/pkg/errors"
 )
 
@@ -26,6 +27,21 @@ type torpedo struct {
 // in a scheduler driver and an external volume provider as arguments.
 type testDriverFunc func() error
 
+func (t *torpedo) testAwsNodeReboot() error {
+	var err error
+	nodes := t.s.GetNodes()
+	fmt.Printf("Getting nodes:\n")
+	for i, tmpnode := range nodes {
+		fmt.Printf("%d node: %+v\n", i, tmpnode)
+		if err := t.n.RebootNode(tmpnode, node.RebootNodeOpts{
+			Force: false,
+		}); err != nil {
+			return err
+		}
+	}
+	fmt.Println("\nTesting aws node reboot......")
+	return err
+}
 
 // testSetupTearDown performs basic test of starting an application and destroying it (along with storage)
 func (t *torpedo) testSetupTearDown() error {

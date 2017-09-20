@@ -12,7 +12,6 @@ import (
 )
 
 func main() {
-	fmt.Println("vim-go")
 	//List aws ec2 instances
 	//
 	sess := session.Must(session.NewSession())
@@ -22,7 +21,6 @@ func main() {
 	config.WithCredentialsChainVerboseErrors(true)
 
 	//Add credentials
-	//
 	creds := credentials.NewEnvCredentials()
 
 	// Retrieve the credentials value
@@ -36,15 +34,21 @@ func main() {
 	fmt.Printf("svc.config: %v\n", svc.Config)
 	fmt.Printf("svc.config.cred: %v", *svc.Config.Credentials)
 	fmt.Printf("listing instances with tag %v in: %v\n", nameFilter, awsRegion)
+	//nameFilter = "i-034154fd986ba74b6"
 	params := &ec2.DescribeInstancesInput{
 		Filters: []*ec2.Filter{
 			{
 				Name: aws.String("tag:Name"),
 				Values: []*string{
-					aws.String(strings.Join([]string{"*", nameFilter, "*"}, "")),
+					aws.String(strings.Join([]string{"*", "", "*"}, "")),
 				},
 			},
 		},
+		/*
+			InstanceIds: []*string{
+				aws.String(strings.Join([]string{nameFilter}, "")),
+			},
+		*/
 	}
 	resp, err := svc.DescribeInstances(params)
 	if err != nil {
@@ -63,19 +67,22 @@ func main() {
 		fmt.Printf("\ninstance %d PublicIpAddress: %s\n", i, *(ins.PublicIpAddress))
 		fmt.Printf("\ninstance %d PrivateIpAddress: %s\n", i, *(ins.PrivateIpAddress))
 	}
-	//Reboot instance
-	for _, ins := range reservations[0].Instances {
-		rebootInput := &ec2.RebootInstancesInput{
-			InstanceIds: []*string{
-				aws.String(*(ins.InstanceId)),
-			},
+	/*
+		//Reboot instance
+		for _, ins := range reservations[0].Instances {
+			rebootInput := &ec2.RebootInstancesInput{
+				InstanceIds: []*string{
+					aws.String(*(ins.InstanceId)),
+				},
+			}
+			fmt.Printf("Now reboot instance %+v\n", rebootInput)
+
+				resp, err := svc.RebootInstances(rebootInput)
+				if err != nil {
+					fmt.Println("there was an error reboot instances", err.Error())
+					log.Fatal(err.Error())
+				}
+			fmt.Printf("%+v\n", resp)
 		}
-		fmt.Printf("Now reboot instance\n")
-		resp, err := svc.RebootInstances(rebootInput)
-		if err != nil {
-			fmt.Println("there was an error reboot instances", err.Error())
-			log.Fatal(err.Error())
-		}
-		fmt.Printf("%+v\n", resp)
-	}
+	*/
 }
